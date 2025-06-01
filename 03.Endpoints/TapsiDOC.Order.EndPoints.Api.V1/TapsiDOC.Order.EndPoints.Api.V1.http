@@ -1,0 +1,6 @@
+@TapsiDOC.Order.EndPoints.Api.V1_HostAddress = http://localhost:5149
+
+GET {{TapsiDOC.Order.EndPoints.Api.V1_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

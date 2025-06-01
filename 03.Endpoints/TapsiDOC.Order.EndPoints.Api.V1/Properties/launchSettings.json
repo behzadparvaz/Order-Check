@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "TapsiDOC.Order.EndPoints.Api.V1": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:61120;http://localhost:61125"
+    }
+  }
+}

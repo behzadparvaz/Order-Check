@@ -1,0 +1,42 @@
+stages:
+  - build
+  - push
+
+variables:
+  order_IMAGE: 'jfrog.tapsi.doctor/local-docker/order'
+  order_TAG: '${CI_COMMIT_TAG}'
+  order_SOTOON_IMAGE: 'registry.tapsi.doctor/local-docker/order'
+
+before_script:
+  - echo "$CI_REGISTRY_PASSWORD" | docker login jfrog.tapsi.doctor -u "$CI_REGISTRY_USER" --password-stdin
+  - echo "$CI_REGISTRY_PASSWORD_SOTOON" | docker login registry.tapsi.doctor -u "$CI_REGISTRY_USER_SOTOON" --password-stdin
+
+build_order:
+  stage: build
+  tags:
+    - runner2
+  script:
+    - docker build --no-cache --add-host jfrog.tapsi.doctor:172.27.215.78 -t $order_IMAGE:$order_TAG ./Order
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^order-/' # Runs only for tags starting with 'order-'
+
+push_order:
+  stage: push
+  tags:
+    - runner2
+  script:
+    - docker push $order_IMAGE:$order_TAG
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^order-/' # Runs only for tags starting with 'order-'
+
+push_order_to_sotoon:
+  stage: push
+  tags:
+    - runner2
+  script:
+    # Push the existing image to the Sotoon registry
+    - docker tag $order_IMAGE:$order_TAG $order_SOTOON_IMAGE:$order_TAG
+    - docker push $order_SOTOON_IMAGE:$order_TAG
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^order-/' # Runs only for tags starting with 'order-'
+  when: manual

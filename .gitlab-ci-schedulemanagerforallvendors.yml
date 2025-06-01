@@ -1,0 +1,42 @@
+stages:
+  - build
+  - push
+
+variables:
+  schedulemanagerforallvendors_IMAGE: 'jfrog.tapsi.doctor/local-docker/schedulemanagerforallvendors'
+  schedulemanagerforallvendors_TAG: '${CI_COMMIT_TAG}'
+  schedulemanagerforallvendors_SOTOON_IMAGE: 'registry.tapsi.doctor/local-docker/schedulemanagerforallvendors'
+
+before_script:
+  - echo "$CI_REGISTRY_PASSWORD" | docker login jfrog.tapsi.doctor -u "$CI_REGISTRY_USER" --password-stdin
+  - echo "$CI_REGISTRY_PASSWORD_SOTOON" | docker login registry.tapsi.doctor -u "$CI_REGISTRY_USER_SOTOON" --password-stdin
+
+build_schedulemanagerforallvendors:
+  stage: build
+  tags:
+    - runner2
+  script:
+    - docker build --no-cache --add-host jfrog.tapsi.doctor:172.27.215.78 -t $schedulemanagerforallvendors_IMAGE:$schedulemanagerforallvendors_TAG -f ./Order/ScheduleManagerForAllVendors ./Order
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^schedulemanagerforallvendors-/' # Runs only for tags starting with 'schedulemanagerforallvendors-'
+
+push_schedulemanagerforallvendors:
+  stage: push
+  tags:
+    - runner2
+  script:
+    - docker push $schedulemanagerforallvendors_IMAGE:$schedulemanagerforallvendors_TAG
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^schedulemanagerforallvendors-/' # Runs only for tags starting with 'schedulemanagerforallvendors-'
+
+push_schedulemanagerforallvendors_to_sotoon:
+  stage: push
+  tags:
+    - runner2
+  script:
+    # Push the existing image to the Sotoon registry
+    - docker tag $schedulemanagerforallvendors_IMAGE:$schedulemanagerforallvendors_TAG $schedulemanagerforallvendors_SOTOON_IMAGE:$schedulemanagerforallvendors_TAG
+    - docker push $schedulemanagerforallvendors_SOTOON_IMAGE:$schedulemanagerforallvendors_TAG
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^schedulemanagerforallvendors-/' # Runs only for tags starting with 'schedulemanagerforallvendors-'
+  when: manual
